@@ -1,71 +1,154 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent))
+
 import streamlit as st
-import plotly.express as px
-from utils.tools import get_dashboard, get_stock_warn, get_all_products
 
-# 接收语言参数
-def show_dashboard(lang):
-    st.title(lang["menu_dashboard"])
-    st.markdown(f"<p style='color:#4b5563; font-size:16px; font-weight:500'>{lang['dashboard_subtitle']}</p>", unsafe_allow_html=True)
-    st.markdown("---")
+# ========== 1. 页面配置（必须是第一个Streamlit命令） ==========
+st.set_page_config(
+    page_title="抖店进销存系统",
+    page_icon="📦",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-    # 获取核心数据
-    data = get_dashboard()
-    products = get_all_products()
-    warn_list = get_stock_warn()
+# ========== 2. 多语言配置 ==========
+LANGS = {
+    "中文": {
+        "title": "抖店进销存系统",
+        "menu_dashboard": "📊 数据大盘",
+        "menu_product": "📦 产品管理",
+        "menu_stock": "📈 库存管理",
+        "menu_finance": "💰 财务税务",
+        "menu_import": "📥 批量导入",
+        "dashboard_subtitle": "实时经营数据 · 本地安全存储",
+        "dashboard_sales": "总销售额",
+        "dashboard_profit": "总净利润",
+        "dashboard_products": "产品总数",
+        "dashboard_warn": "库存预警",
+        "dashboard_warn_title": "🚨 低库存预警商品",
+        "dashboard_warn_ok": "✅ 所有商品库存充足！",
+        "dashboard_chart_title": "产品库存统计"
+    },
+    "English": {
+        "title": "Douyin Shop Inventory System",
+        "menu_dashboard": "📊 Dashboard",
+        "menu_product": "📦 Product Management",
+        "menu_stock": "📈 Stock Management",
+        "menu_finance": "💰 Finance & Tax",
+        "menu_import": "📥 Batch Import",
+        "dashboard_subtitle": "Real-time Business Data · Local Secure Storage",
+        "dashboard_sales": "Total Sales",
+        "dashboard_profit": "Total Net Profit",
+        "dashboard_products": "Total Products",
+        "dashboard_warn": "Stock Warnings",
+        "dashboard_warn_title": "🚨 Low Stock Warning Products",
+        "dashboard_warn_ok": "✅ All products have sufficient stock!",
+        "dashboard_chart_title": "Product Stock Statistics"
+    }
+}
 
-    # 数据卡片（增强对比度）
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric(f"💰 {lang['dashboard_sales']}", f"¥{data.get('total_sales',0)}")
-    with col2:
-        st.metric(f"✅ {lang['dashboard_profit']}", f"¥{data.get('total_profit',0)}")
-    with col3:
-        st.metric(f"📦 {lang['dashboard_products']}", len(products))
-    with col4:
-        st.metric(f"⚠️ {lang['dashboard_warn']}", len(warn_list))
+# ========== 3. 强化CSS样式（解决对比度问题） ==========
+st.markdown("""
+<style>
+    /* 全局背景与字体 */
+    html, body, .main {
+        background-color: #f0f2f6 !important;
+        color: #1f2937 !important;
+    }
 
-    st.markdown("---")
+    /* 侧边栏样式 */
+    [data-testid="stSidebar"] {
+        background-color: #1f2937 !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #ffffff !important;
+    }
 
-    # 库存预警列表（强制表格样式）
-    st.subheader(lang["dashboard_warn_title"])
-    if warn_list:
-        # 转换为更易读的格式，避免原始字段名混乱
-        clean_warn_list = []
-        for item in warn_list:
-            clean_warn_list.append({
-                "产品ID": item.get("id", ""),
-                "产品名称": item.get("name", ""),
-                "产品类型": item.get("type", ""),
-                "当前库存": item.get("stock", 0),
-                "预警库存": item.get("warn_stock", 5),
-                "成本价": f"¥{item.get('cost_price', 0)}",
-                "售价": f"¥{item.get('sale_price', 0)}"
-            })
-        st.table(clean_warn_list)  # 展示清洗后的表格
-    else:
-        st.success(lang["dashboard_warn_ok"])
+    /* 按钮样式 */
+    .stButton>button {
+        border-radius: 10px; 
+        height: 45px; 
+        font-size: 16px;
+        background-color: #2563eb !important;
+        color: white !important;
+    }
+    .stButton>button:hover {
+        background-color: #1d4ed8 !important;
+    }
 
-    # 库存可视化图表（强化文字颜色）
-    if products:
-        st.subheader(lang["dashboard_chart_title"])
-        names = [p['name'] for p in products]
-        stocks = [p['stock'] for p in products]
-        fig = px.bar(
-            x=names, y=stocks,
-            title=lang["dashboard_chart_title"],
-            template="plotly_white",  # 更清晰的白色模板
-            color_discrete_sequence=["#2563eb"]  # 统一品牌色
-        )
-        # 强制图表所有文字为深灰色
-        fig.update_layout(
-            font=dict(color="#1f2937", size=14, weight="500"),
-            plot_bgcolor="#f0f2f6",
-            paper_bgcolor="#f0f2f6",
-            title_font=dict(color="#1f2937", size=16, weight="700"),
-            xaxis_title_font=dict(color="#1f2937", weight="600"),
-            yaxis_title_font=dict(color="#1f2937", weight="600")
-        )
-        # 坐标轴文字强化
-        fig.update_xaxes(tickfont=dict(color="#1f2937", weight="500"))
-        fig.update_yaxes(tickfont=dict(color="#1f2937", weight="500"))
-        st.plotly_chart(fig, use_container_width=True)
+    /* 数据卡片样式 */
+    div[data-testid="stMetric"] {
+        background-color: white !important;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    div[data-testid="stMetric"] h3, 
+    div[data-testid="stMetric"] p {
+        color: #1f2937 !important;
+        font-size: 24px !important;
+    }
+
+    /* 表格样式（核心修复） */
+    table, th, td {
+        color: #1f2937 !important;
+        background-color: white !important;
+        border: 1px solid #e5e7eb !important;
+        padding: 8px !important;
+    }
+    th {
+        background-color: #f9fafb !important;
+        color: #1f2937 !important;
+        font-weight: 700 !important;
+    }
+
+    /* 图表样式（适配Plotly 5.17.0） */
+    .plotly-container, .plotly * {
+        color: #1f2937 !important;
+    }
+    svg * {
+        fill: #1f2937 !important;
+        stroke: #1f2937 !important;
+    }
+
+    /* 通用文本 */
+    h1, h2, h3, h4, p, div, span {
+        color: #1f2937 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ========== 4. 语言选择器 ==========
+st.sidebar.selectbox(
+    "Language / 语言",
+    options=["中文", "English"],
+    key="lang",
+    index=0
+)
+lang = LANGS[st.session_state.lang]
+
+# ========== 5. 侧边栏导航 ==========
+st.sidebar.title(lang["title"])
+st.sidebar.markdown("---")
+menu = st.sidebar.radio(
+    "功能菜单 / Function Menu",
+    [lang["menu_dashboard"], lang["menu_product"], lang["menu_stock"], lang["menu_finance"], lang["menu_import"]]
+)
+
+# ========== 6. 页面路由 ==========
+if menu == lang["menu_dashboard"]:
+    from pages.dashboard import show_dashboard
+    show_dashboard(lang)
+elif menu == lang["menu_product"]:
+    from pages.product import show_product
+    show_product(lang)
+elif menu == lang["menu_stock"]:
+    from pages.stock import show_stock
+    show_stock(lang)
+elif menu == lang["menu_finance"]:
+    from pages.finance import show_finance
+    show_finance(lang)
+elif menu == lang["menu_import"]:
+    from pages.import_page import show_import
+    show_import(lang)

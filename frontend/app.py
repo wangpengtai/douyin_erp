@@ -4,7 +4,7 @@ sys.path.append(str(Path(__file__).resolve().parent))
 
 import streamlit as st
 
-# ========== 第一步：先设置页面配置（必须是第一个Streamlit命令） ==========
+# ========== 1. 页面配置（必须是第一个Streamlit命令） ==========
 st.set_page_config(
     page_title="抖店进销存系统",
     page_icon="📦",
@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ========== 第二步：多语言配置 ==========
+# ========== 2. 多语言配置 ==========
 LANGS = {
     "中文": {
         "title": "抖店进销存系统",
@@ -48,46 +48,36 @@ LANGS = {
     }
 }
 
-# ========== 第三步：优化UI样式（增强所有元素对比度） ==========
+# ========== 3. 强化CSS样式（解决对比度问题） ==========
 st.markdown("""
 <style>
-    /* 全局背景与字体（核心：强制所有文本为深灰色） */
+    /* 全局背景与字体 */
     html, body, .main {
         background-color: #f0f2f6 !important;
         color: #1f2937 !important;
-        font-weight: 500 !important;
     }
 
-    /* 侧边栏样式强化 */
+    /* 侧边栏样式 */
     [data-testid="stSidebar"] {
         background-color: #1f2937 !important;
     }
     [data-testid="stSidebar"] * {
         color: #ffffff !important;
-        font-weight: 500 !important;
     }
 
-    /* 按钮样式（增强对比度） */
+    /* 按钮样式 */
     .stButton>button {
         border-radius: 10px; 
         height: 45px; 
         font-size: 16px;
         background-color: #2563eb !important;
         color: white !important;
-        font-weight: 600 !important;
     }
     .stButton>button:hover {
         background-color: #1d4ed8 !important;
     }
 
-    /* 输入框样式 */
-    .stTextInput>div>div, .stNumberInput>div>div, .stSelectbox>div>div {
-        border-radius: 8px;
-        background-color: white !important;
-        color: #1f2937 !important;
-    }
-
-    /* 数据卡片样式（强制深文字） */
+    /* 数据卡片样式 */
     div[data-testid="stMetric"] {
         background-color: white !important;
         border-radius: 15px;
@@ -97,15 +87,13 @@ st.markdown("""
     div[data-testid="stMetric"] h3, 
     div[data-testid="stMetric"] p {
         color: #1f2937 !important;
-        font-weight: 600 !important;
         font-size: 24px !important;
     }
 
-    /* 表格样式（核心修复：表格文字清晰） */
+    /* 表格样式（核心修复） */
     table, th, td {
         color: #1f2937 !important;
         background-color: white !important;
-        font-weight: 500 !important;
         border: 1px solid #e5e7eb !important;
         padding: 8px !important;
     }
@@ -115,42 +103,32 @@ st.markdown("""
         font-weight: 700 !important;
     }
 
-    /* 图表样式（强制图表文字为深色） */
+    /* 图表样式（适配Plotly 5.17.0） */
     .plotly-container, .plotly * {
         color: #1f2937 !important;
-        font-weight: 500 !important;
     }
     svg * {
         fill: #1f2937 !important;
         stroke: #1f2937 !important;
     }
 
-    /* 通用文本样式（覆盖所有遗漏的文本） */
-    h1, h2, h3, h4, h5, h6, p, div, span, label {
+    /* 通用文本 */
+    h1, h2, h3, h4, p, div, span {
         color: #1f2937 !important;
-        font-weight: 500 !important;
-    }
-
-    /* 成功提示框样式 */
-    .stSuccess {
-        background-color: #dcfce7 !important;
-        color: #166534 !important;
-        font-weight: 500 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ========== 第四步：侧边栏语言选择器（后置，不影响set_page_config） ==========
+# ========== 4. 语言选择器 ==========
 st.sidebar.selectbox(
     "Language / 语言",
     options=["中文", "English"],
     key="lang",
     index=0
 )
-# 获取当前语言配置
 lang = LANGS[st.session_state.lang]
 
-# ========== 第五步：侧边栏导航（使用多语言） ==========
+# ========== 5. 侧边栏导航 ==========
 st.sidebar.title(lang["title"])
 st.sidebar.markdown("---")
 menu = st.sidebar.radio(
@@ -158,10 +136,10 @@ menu = st.sidebar.radio(
     [lang["menu_dashboard"], lang["menu_product"], lang["menu_stock"], lang["menu_finance"], lang["menu_import"]]
 )
 
-# ========== 第六步：页面路由 ==========
+# ========== 6. 页面路由 ==========
 if menu == lang["menu_dashboard"]:
     from pages.dashboard import show_dashboard
-    show_dashboard(lang)  # 传递语言配置
+    show_dashboard(lang)
 elif menu == lang["menu_product"]:
     from pages.product import show_product
     show_product(lang)
