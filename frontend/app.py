@@ -4,8 +4,15 @@ sys.path.append(str(Path(__file__).resolve().parent))
 
 import streamlit as st
 
-# ========== 新增：多语言配置 ==========
-# 定义中英双语词典
+# ========== 第一步：先设置页面配置（必须是第一个Streamlit命令） ==========
+st.set_page_config(
+    page_title="抖店进销存系统",
+    page_icon="📦",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ========== 第二步：多语言配置 ==========
 LANGS = {
     "中文": {
         "title": "抖店进销存系统",
@@ -41,7 +48,99 @@ LANGS = {
     }
 }
 
-# 侧边栏语言选择器
+# ========== 第三步：优化UI样式（增强所有元素对比度） ==========
+st.markdown("""
+<style>
+    /* 全局背景与字体（核心：强制所有文本为深灰色） */
+    html, body, .main {
+        background-color: #f0f2f6 !important;
+        color: #1f2937 !important;
+        font-weight: 500 !important;
+    }
+
+    /* 侧边栏样式强化 */
+    [data-testid="stSidebar"] {
+        background-color: #1f2937 !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+    }
+
+    /* 按钮样式（增强对比度） */
+    .stButton>button {
+        border-radius: 10px; 
+        height: 45px; 
+        font-size: 16px;
+        background-color: #2563eb !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
+    .stButton>button:hover {
+        background-color: #1d4ed8 !important;
+    }
+
+    /* 输入框样式 */
+    .stTextInput>div>div, .stNumberInput>div>div, .stSelectbox>div>div {
+        border-radius: 8px;
+        background-color: white !important;
+        color: #1f2937 !important;
+    }
+
+    /* 数据卡片样式（强制深文字） */
+    div[data-testid="stMetric"] {
+        background-color: white !important;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    div[data-testid="stMetric"] h3, 
+    div[data-testid="stMetric"] p {
+        color: #1f2937 !important;
+        font-weight: 600 !important;
+        font-size: 24px !important;
+    }
+
+    /* 表格样式（核心修复：表格文字清晰） */
+    table, th, td {
+        color: #1f2937 !important;
+        background-color: white !important;
+        font-weight: 500 !important;
+        border: 1px solid #e5e7eb !important;
+        padding: 8px !important;
+    }
+    th {
+        background-color: #f9fafb !important;
+        color: #1f2937 !important;
+        font-weight: 700 !important;
+    }
+
+    /* 图表样式（强制图表文字为深色） */
+    .plotly-container, .plotly * {
+        color: #1f2937 !important;
+        font-weight: 500 !important;
+    }
+    svg * {
+        fill: #1f2937 !important;
+        stroke: #1f2937 !important;
+    }
+
+    /* 通用文本样式（覆盖所有遗漏的文本） */
+    h1, h2, h3, h4, h5, h6, p, div, span, label {
+        color: #1f2937 !important;
+        font-weight: 500 !important;
+    }
+
+    /* 成功提示框样式 */
+    .stSuccess {
+        background-color: #dcfce7 !important;
+        color: #166534 !important;
+        font-weight: 500 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ========== 第四步：侧边栏语言选择器（后置，不影响set_page_config） ==========
 st.sidebar.selectbox(
     "Language / 语言",
     options=["中文", "English"],
@@ -51,54 +150,7 @@ st.sidebar.selectbox(
 # 获取当前语言配置
 lang = LANGS[st.session_state.lang]
 
-# ========== 优化：UI样式（增强对比度） ==========
-st.set_page_config(
-    page_title=lang["title"],
-    page_icon="📦",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# 自定义CSS（核心优化：增强字体/背景对比度，苹果风更清晰）
-st.markdown("""
-<style>
-    /* 全局背景与字体 */
-    .main {background-color: #f0f2f6; color: #1f2937;}
-    /* 侧边栏样式 */
-    [data-testid="stSidebar"] {background-color: #1f2937;}
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {color: #ffffff !important;}
-    /* 按钮样式（增强对比度） */
-    .stButton>button {
-        border-radius: 10px; 
-        height: 45px; 
-        font-size: 16px;
-        background-color: #2563eb;
-        color: white !important;
-    }
-    .stButton>button:hover {background-color: #1d4ed8;}
-    /* 输入框样式 */
-    .stTextInput>div>div, .stNumberInput>div>div, .stSelectbox>div>div {
-        border-radius: 8px;
-        background-color: white;
-        color: #1f2937;
-    }
-    /* 数据卡片样式（增强对比度） */
-    div[data-testid="stMetric"] {
-        background-color: white;
-        border-radius: 15px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        color: #1f2937 !important;
-    }
-    div[data-testid="stMetric"] h3 {color: #4b5563 !important;}
-    div[data-testid="stMetric"] p {color: #1f2937 !important; font-size: 24px !important; font-weight: 600;}
-    /* 文本样式 */
-    h1, h2, h3, h4, p, div {color: #1f2937 !important;}
-    .stSuccess {background-color: #dcfce7; color: #166534 !important;}
-</style>
-""", unsafe_allow_html=True)
-
-# ========== 侧边栏导航（使用多语言） ==========
+# ========== 第五步：侧边栏导航（使用多语言） ==========
 st.sidebar.title(lang["title"])
 st.sidebar.markdown("---")
 menu = st.sidebar.radio(
@@ -106,7 +158,7 @@ menu = st.sidebar.radio(
     [lang["menu_dashboard"], lang["menu_product"], lang["menu_stock"], lang["menu_finance"], lang["menu_import"]]
 )
 
-# ========== 页面路由 ==========
+# ========== 第六步：页面路由 ==========
 if menu == lang["menu_dashboard"]:
     from pages.dashboard import show_dashboard
     show_dashboard(lang)  # 传递语言配置
